@@ -1,0 +1,106 @@
+##### BASIC SETTINGS #####
+
+# Set Ctrl-s as prefix
+unbind-key C-b
+set -g prefix C-s
+bind C-s send-prefix
+
+# Set history limit
+set -g history-limit 1000000
+
+# Set default terminal and shell
+# set -g default-terminal "screen-256color"
+set -g default-terminal "xterm-ghostty"
+set -g default-command /opt/homebrew/bin/fish
+
+# Start windows and panes from index 1
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
+# Use vi keys in copy mode
+set -g mode-keys vi
+
+# Faster escape sequence
+set -s escape-time 50
+
+
+##### STATUS BAR CONFIGURATION #####
+
+set -g status on
+set -g status-interval 2
+set -g status-justify centre
+set -g status-style bg=black,fg=cyan
+set -g status-left-length 30
+set -g status-right-length 60
+
+# Left: Session name with rounded separators
+set -g status-left "#[fg=blue,bg=black]#[fg=black,bg=blue,bold] #S #[fg=blue,bg=black,nobold] "
+
+# Right: Show last window only
+# set -g status-right "#[fg=cyan]⮕ Last: #W#[default]"
+set -g status-right ""
+
+# Center: Rounded window list separators with spacing
+setw -g window-status-separator " "
+
+# Inactive windows
+setw -g window-status-format " #[fg=green,bg=black]#[fg=black,bg=green] #I:#W #[fg=green,bg=black] "
+
+# Active window + zoom indicator
+setw -g window-status-current-format " #[fg=red,bg=black]#[fg=black,bg=red,bold] #I:#W#{?window_zoomed_flag, 🔍,} #[fg=red,bg=black] "
+
+# Style for last (previously used) window
+# setw -g window-status-last-style "fg=cyan,bg=black"
+
+
+##### MOUSE AND SPLIT BEHAVIOR #####
+
+set -g mouse on
+
+# Preserve current directory in new windows and splits
+bind '"' split-window -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+bind c new-window -a -c "#{pane_current_path}"
+
+
+##### COPY MODE (VI-STYLE) #####
+
+# Basic vi-style bindings
+bind-key -T copy-mode-vi 'y' send -X copy-selection
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+bind-key -T copy-mode-vi 'C-v' send -X rectangle-toggle
+bind-key -T copy-mode-vi Escape send-keys -X clear-selection
+
+# Mouse interactions in copy mode
+unbind-key -T copy-mode-vi MouseDragEnd1Pane
+
+bind-key -T copy-mode-vi DoubleClick1Pane select-pane \; send-keys -X select-word
+bind-key -T root DoubleClick1Pane select-pane -t = \; \
+    if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" \
+    { send-keys -M } { copy-mode -H ; send-keys -X select-word }
+
+bind-key -T copy-mode-vi TripleClick1Pane select-pane \; send-keys -X select-line
+bind-key -T root TripleClick1Pane select-pane -t = \; \
+    if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" \
+    { send-keys -M } { copy-mode -H ; send-keys -X select-line }
+
+
+##### SYNC PANES #####
+
+bind e set -g synchronize-panes on
+bind E set -g synchronize-panes off
+
+
+##### PLUGINS #####
+
+# TPM plugin manager
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-yank'
+
+# Use copy-pipe-no-clear instead of default
+set -g @yank_action 'copy-pipe-no-clear'
+
+# Initialize plugins (keep this at the end)
+run '~/.tmux/plugins/tpm/tpm'

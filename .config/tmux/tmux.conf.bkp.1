@@ -1,0 +1,123 @@
+##### BASIC SETTINGS #####
+
+# Prefix: Ctrl-s
+unbind-key C-b
+set -g prefix C-s
+bind C-s send-prefix
+
+# Big scrollback history
+set -g history-limit 1000000
+
+# Default terminal & shell
+set -g default-terminal "xterm-ghostty"
+set -g default-command /opt/homebrew/bin/fish
+
+# Indices start at 1
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
+# vi keys in copy-mode
+set -g mode-keys vi
+
+# Make key handling snappy
+set -sg escape-time 0
+
+# Better app redraws/focus handling
+set -g focus-events on
+
+
+##### STATUS BAR CONFIGURATION #####
+
+set -g status on
+set -g status-interval 2
+set -g status-justify centre
+set -g status-style bg=black,fg=cyan
+set -g status-left-length 30
+set -g status-right-length 60
+
+# Left: Session name with rounded separators
+set -g status-left "#[fg=blue,bg=black]#[fg=black,bg=blue,bold] #S #[fg=blue,bg=black,nobold] "
+
+# Right: empty (show nothing)
+set -g status-right ""
+
+# Center: window list
+setw -g window-status-separator " "
+setw -g window-status-format " #[fg=green,bg=black]#[fg=black,bg=green] #I:#W #[fg=green,bg=black] "
+setw -g window-status-current-format " #[fg=red,bg=black]#[fg=black,bg=red,bold] #I:#W#{?window_zoomed_flag, 🔍,} #[fg=red,bg=black] "
+
+
+##### MOUSE + SPLITS #####
+
+set -g mouse on
+
+# Split/new-window keeps cwd
+bind '"' split-window -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+bind c new-window -a -c "#{pane_current_path}"
+
+
+##### SMOOTH SCROLLBACK QUALITY-OF-LIFE #####
+# Wheel scroll: if not in copy-mode, enter it and keep scrolling;
+# if already in copy-mode or using the mouse for something else, pass through.
+bind -n WheelUpPane if-shell -F "#{pane_in_mode}" \
+  "send-keys -M" \
+  "copy-mode -e; send-keys -M"
+bind -n WheelDownPane if-shell -F "#{pane_in_mode}" "send-keys -M" "send-keys -M"
+
+# PageUp opens copy-mode at the top of visible content
+bind -n PageUp copy-mode -e
+
+# vi-style smooth-ish paging
+bind -T copy-mode-vi C-u send -X halfpage-up
+bind -T copy-mode-vi C-d send -X halfpage-down
+bind -T copy-mode-vi C-b send -X page-up
+bind -T copy-mode-vi C-f send -X page-down
+bind -T copy-mode-vi g send -X history-top
+bind -T copy-mode-vi G send -X history-bottom
+
+# Optional: make alternate screen a no-op so terminal native scrollback feels consistent.
+# Comment these if full-screen TUIs behave oddly.
+# set -g terminal-overrides ',xterm-*:smcup@:rmcup@'
+
+
+##### COPY MODE (VI-STYLE) #####
+
+# Your existing bindings
+bind-key -T copy-mode-vi 'y' send -X copy-selection
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+bind-key -T copy-mode-vi 'C-v' send -X rectangle-toggle
+bind-key -T copy-mode-vi Escape send-keys -X clear-selection
+
+# Mouse interactions in copy mode
+unbind-key -T copy-mode-vi MouseDragEnd1Pane
+bind-key -T copy-mode-vi DoubleClick1Pane select-pane \; send-keys -X select-word
+bind-key -T root DoubleClick1Pane select-pane -t = \; \
+    if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" \
+    { send-keys -M } { copy-mode -H ; send-keys -X select-word }
+
+bind-key -T copy-mode-vi TripleClick1Pane select-pane \; send-keys -X select-line
+bind-key -T root TripleClick1Pane select-pane -t = \; \
+    if-shell -F "#{||:#{pane_in_mode},#{mouse_any_flag}}" \
+    { send-keys -M } { copy-mode -H ; send-keys -X select-line }
+
+
+##### SYNC PANES #####
+
+bind e set -g synchronize-panes on
+bind E set -g synchronize-panes off
+
+
+##### PLUGINS #####
+
+# TPM plugin manager
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-yank'
+
+# Use copy-pipe-no-clear instead of default yank action
+set -g @yank_action 'copy-pipe-no-clear'
+
+# Initialize plugins (keep this last)
+run '~/.tmux/plugins/tpm/tpm'
