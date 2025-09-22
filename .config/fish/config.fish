@@ -17,7 +17,7 @@ alias ta='tmux attach -t'
 alias tkss='tmux kill-session -t'
 alias ldd='otool -L'
 
-alias es='/opt/homebrew/opt/emacs-plus@29/bin/emacs --fg-daemon'
+alias es='/opt/homebrew/opt/emacs-plus@30/bin/emacs --fg-daemon'
 alias ec='emacsclient'
 alias e='emacs -nw'
 
